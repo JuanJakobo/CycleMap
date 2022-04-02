@@ -10,6 +10,11 @@
       @update:center="centerUpdate"
       @update:zoom="zoomUpdate"
     >
+
+      <l-polyline :lat-lngs="polyline.latlngs" :color="polyline.color"
+            v-on:click="$bvModal.show('bv-modal-example')">
+      </l-polyline>
+
       <!-- top left -->
       <l-control position="topleft">
         <table>
@@ -142,6 +147,7 @@ import {
   LControlScale,
   LControlZoom,
   LMarker,
+  LPolyline,
 } from "vue2-leaflet";
 import { BButton } from "bootstrap-vue";
 
@@ -155,6 +161,7 @@ export default {
     LControlZoom,
     LMarker,
     BButton,
+    LPolyline,
   },
   data() {
     return {
@@ -175,6 +182,10 @@ export default {
       errored: false,
       markers: [],
       selected: null,
+      polyline: {
+        latlngs: [[52.40783,12.42027],[52.40780,19.42028]],
+        color: 'green'
+      },
       dropdownmenu: [
         {
           value: null,

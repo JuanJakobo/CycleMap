@@ -223,10 +223,20 @@ export default {
     openConfig() {
       alert("v.0.1");
     },
+    getTours() {
+        fetch("http://localhost:8989/tours",{
+            "method":"GET"
+        })
+        .then(response => response.json())
+        .then(data => (this.dropdownmenu = data))
+        .catch(err=>{
+                this.dropdownmenu.push({ value: "a", text: "ERROR" });
+            console.log(err);
+        });
+    }
   },
   mounted() {
-        this.dropdownmenu.push({ value: "a", text: "Mexico" });
-        this.dropdownmenu.push({ value: "b", text: "USA" });
+        this.getTours();
 
         for (let index = 0; index < 3; index++) {
           this.markers.push({

@@ -2,9 +2,9 @@
   <div>
     <!-- draw the map -->
     <l-map
-      ref="map"
-      id="mapContainer"
-      :zoom="zoom"
+    ref="map"
+    id="mapContainer"
+    :zoom="zoom"
       :center="center"
       :options="mapOptions"
       @update:center="centerUpdate"
@@ -20,18 +20,16 @@
         <table>
           <tr>
             <td>
-              <b-button variant="light" href="https://www.jjohannssen.de">
-                <b-icon icon="arrow-left-square"></b-icon
-              ></b-button>
+              <b-button variant="light" href="homepage">
+                <b-icon icon="arrow-left-square"></b-icon>
+             </b-button>
             </td>
             <td>
               <b-form-select
                 v-model="selected"
                 :options="dropdownmenu"
                 v-on:change="updateDropdown"
-              >
-                ></b-form-select
-              >
+              />
             </td>
             <!-- TODO show only if route is selected, then blog entries can be opened-->
             <td>
@@ -39,9 +37,7 @@
                 v-model="selected"
                 :options="blogEntry"
                 v-on:change="updateDropdown"
-              >
-                ></b-form-select
-              >
+              />
             </td>
 
           </tr>
@@ -101,6 +97,7 @@
           </b-carousel>
         </div>
                 <template #footer>
+
           <small class="text-muted">Last updated 3 mins ago</small>
         </template>
         <p class="my-4" v-for="i in 20" :key="i">
@@ -108,9 +105,7 @@
           dapibus ac facilisis in, egestas eget quam. Morbi leo risus, porta ac
           consectetur ac, vestibulum at eros.
         </p>
-        <b-button class="mt-3" block @click="$bvModal.hide('bv-modal-example')"
-          >Close Me</b-button
-        >
+        <b-button class="mt-3" block @click="$bvModal.hide('bv-modal-example')" >Close Me</b-button >
       </b-modal>
 
       <!-- change error process -->
@@ -165,10 +160,11 @@ export default {
   },
   data() {
     return {
-      zoom: 5,
-      center: latLng(19.432608, -99.133209),
-      url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-      attribution:
+       image: null,
+       zoom: 5,
+       center: latLng(19.432608, -99.133209),
+       url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+       attribution:
         '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
       showParagraph: false,
       mapOptions: {

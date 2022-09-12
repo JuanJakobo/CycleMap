@@ -24,6 +24,7 @@
                 <b-icon icon="arrow-left-square"></b-icon>
              </b-button>
             </td>
+            <section v-show="!errored">
             <td>
               <b-form-select
                 v-model="selected"
@@ -31,6 +32,7 @@
                 v-on:change="updateDropdown"
               />
             </td>
+            <!-- <section v-show="!errored"> -->
             <!-- TODO show only if route is selected, then blog entries can be opened-->
             <td>
               <b-form-select
@@ -39,7 +41,7 @@
                 v-on:change="updateDropdown"
               />
             </td>
-
+            </section>
           </tr>
         </table>
       </l-control>
@@ -111,6 +113,7 @@
       <!-- change error process -->
       <section v-if="errored">
         <p>
+        <!-- is never shown as is "overwritten" by the map -->
           We're sorry, we're not able to retrieve this information at the
           moment, please try back later
         </p>
@@ -226,14 +229,11 @@ export default {
         .then(response => response.json())
         .then(data => (this.dropdownmenu = data))
         .catch(err=>{
-                this.dropdownmenu.push({ value: "a", text: "ERROR" });
-            console.log(err);
+                console.log(err);
+                this.errored = true;
         });
-    }
-  },
-  mounted() {
-        this.getTours();
-
+    },
+    drawMarkers() {
         for (let index = 0; index < 3; index++) {
           this.markers.push({
             location: latLng(19.432608, -99.133209 + index),
@@ -247,8 +247,11 @@ export default {
             return [m.location.lat, m.location.lng];
           })
         );
-
-
+    }
+  },
+  mounted() {
+        this.getTours();
+        //this.drawMarkers();
 
   },
 };

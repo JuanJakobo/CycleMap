@@ -1,1 +1,1 @@
-rootProject.name = "Cyclemap-backend"
+rootProject.name = "cyclemap-backend"

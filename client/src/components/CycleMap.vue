@@ -11,10 +11,6 @@
       @update:zoom="zoomUpdate"
     >
 
-      <l-polyline :lat-lngs="polyline.latlngs" :color="polyline.color"
-            v-on:click="$bvModal.show('bv-modal-example')">
-      </l-polyline>
-
       <!-- top left -->
       <l-control position="topleft">
         <table>
@@ -63,9 +59,30 @@
       ></l-control-scale>
       <l-tile-layer :url="url" :attribution="attribution" />
 
+      <!-- Polylines -->
+      <!-- TODO change error process -->
+      <section v-if="errored">
+        <p>
+        <!-- TODO to as overlay, as is never shown as is "overwritten" by the map -->
+          We're sorry, we're not able to retrieve this information at the
+          moment, please try back later
+        </p>
+      </section>
+      <section v-else>
+        <div v-if="gotCoordinates">
+        <l-polyline
+        :lat-lngs="polyline.latlngs"
+        :color="polyline.color"
+        v-on:click="loadContent()"
+        v-on:mouseover="changeColor(true)"
+        v-on:mouseleave="changeColor(false)">
+        </l-polyline>
+        </div>
+      </section>
+
       <!-- card -->
       <b-modal
-        id="bv-modal-example"
+        id="bv-modal-trip"
         hide-footer
         scrollable
         title="Scrollable Content"
@@ -233,26 +250,33 @@ export default {
                 this.errored = true;
         });
     },
-    drawMarkers() {
-        for (let index = 0; index < 3; index++) {
-          this.markers.push({
-            location: latLng(19.432608, -99.133209 + index),
-            content: "test" + index,
-          });
+    async getCoordinates() {
+        let response = await fetch("http://localhost:8989/trips/1/coordinates",{
+                "method":"GET"
+                })
+        if (response.status === 200) {
+            let data = await response.json();
+            data.forEach((value) =>{
+                    this.latl.push([value.lat,value.long]);
+                    });
+            this.gotCoordinates = true;
+            this.polyline.latlngs = this.latl;
+            //TODO
+            //this.ab = this.$refs.test.leaftletObject;
+            //this.ab.getBounds();
+            this.$refs.map.mapObject.fitBounds(this.polyline.getBounds());
         }
-        this.markers[0].location = latLng(19.432608, -99.133209);
-        this.test = true;
-        this.$refs.map.mapObject.fitBounds(
-          this.markers.map((m) => {
-            return [m.location.lat, m.location.lng];
-          })
-        );
-    }
+        else
+        {
+            console.log(response.status);
+        }
+    },
   },
   mounted() {
         this.getTours();
-        //this.drawMarkers();
-
+        this.getCoordinates();
+  },
+  mounted() {
   },
 };
 </script>

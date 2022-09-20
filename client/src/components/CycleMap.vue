@@ -121,36 +121,9 @@
 
           <small class="text-muted">Last updated 3 mins ago</small>
         </template>
-        <p class="my-4" v-for="i in 20" :key="i">
-          Cras mattis consectetur purus sit amet fermentum. Cras justo odio,
-          dapibus ac facilisis in, egestas eget quam. Morbi leo risus, porta ac
-          consectetur ac, vestibulum at eros.
-        </p>
-        <b-button class="mt-3" block @click="$bvModal.hide('bv-modal-example')" >Close Me</b-button >
+        <b-button class="mt-3" block @click="$bvModal.hide('bv-modal-trip')" >Close Me</b-button >
       </b-modal>
 
-      <!-- change error process -->
-      <section v-if="errored">
-        <p>
-        <!-- is never shown as is "overwritten" by the map -->
-          We're sorry, we're not able to retrieve this information at the
-          moment, please try back later
-        </p>
-      </section>
-
-      <section v-else>
-        <div v-if="test">
-          <l-marker
-            ref="marker"
-            v-for="(item, index) in markers"
-            :key="'marker-' + index"
-            :lat-lng="item.location"
-            v-on:click="$bvModal.show('bv-modal-example')"
-          >
-            <!--v-on:click="onClick(index)"-->
-          </l-marker>
-        </div>
-      </section>
     </l-map>
   </div>
 </template>
@@ -163,7 +136,6 @@ import {
   LControl,
   LControlScale,
   LControlZoom,
-  LMarker,
   LPolyline,
 } from "vue2-leaflet";
 import { BButton } from "bootstrap-vue";
@@ -176,7 +148,6 @@ export default {
     LControl,
     LControlScale,
     LControlZoom,
-    LMarker,
     BButton,
     LPolyline,
   },

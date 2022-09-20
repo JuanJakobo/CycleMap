@@ -23,20 +23,22 @@
             <section v-show="!errored">
             <td>
               <b-form-select
-                v-model="selected"
-                :options="dropdownmenu"
-                v-on:change="updateDropdown"
+                v-model="selectedTour"
+                id="tourDropdown"
+                :options="tourDropdown"
+                v-on:change="updateTourDropdown"
               />
             </td>
-            <!-- <section v-show="!errored"> -->
+             <section v-show="tourHasTrips">
             <!-- TODO show only if route is selected, then blog entries can be opened-->
             <td>
               <b-form-select
-                v-model="selected"
-                :options="blogEntry"
-                v-on:change="updateDropdown"
+                v-model="selectedTrip"
+                :options="tripDropdown"
+                v-on:change="updateTripDropdown"
               />
             </td>
+            </section>
             </section>
           </tr>
         </table>
@@ -192,23 +194,23 @@ export default {
         zoomControl: false,
       },
       content: null,
-      test: false,
-      info: null,
+      gotCoordinates: false,
       loading: true,
       errored: false,
-      markers: [],
-      selected: null,
+      tourHasTrips: false,
+      latl: [],
       polyline: {
-        latlngs: [[52.40783,12.42027],[52.40780,19.42028]],
-        color: 'green'
+        color: 'black',
       },
-      dropdownmenu: [
+      selectedTour: null,
+      tourDropdown: [
         {
           value: null,
           text: "Select tour",
         },
       ],
-      blogEntry: [
+      selectedTrip: null,
+      tripDropdown: [
         {
           value: null,
           text: "Blog entry",
@@ -223,32 +225,43 @@ export default {
     centerUpdate(center) {
       this.currentCenter = center;
     },
-    updateDropdown() {
-      this.markers.splice(0, this.markers.length);
-      this.markers.push({
-        location: latLng(19.432608, -99.133209),
-        content: "test" + 2,
-      });
-
-      this.$refs.map.mapObject.fitBounds(
-        this.markers.map((m) => {
-          return [m.location.lat, m.location.lng];
-        })
-      );
+    updateTourDropdown() {
+        console.log(this.selectedTour);
+    },
+    updateTripDropdown() {
     },
     openConfig() {
       alert("v.0.1");
     },
-    getTours() {
-        fetch("http://localhost:8989/tours",{
+    loadContent() {
+        this.$bvModal.show("bv-modal-trip");
+    },
+    changeColor(change) {
+        if(change)
+            this.polyline.color = "yellow";
+        else
+            this.polyline.color = "black";
+    },
+    async getTours() {
+        let response = await fetch("http://localhost:8989/tours",{
             "method":"GET"
-        })
-        .then(response => response.json())
-        .then(data => (this.dropdownmenu = data))
-        .catch(err=>{
+        }).catch(err=>{
                 console.log(err);
                 this.errored = true;
         });
+
+        if(response.status === 200){
+            let data = await response.json();
+            data.forEach((value,index) =>{
+                console.log(index);
+                this.tourDropdown.push(value.title);
+            });
+
+        }
+        else
+        {
+            console.log(response.status);
+        }
     },
     async getCoordinates() {
         let response = await fetch("http://localhost:8989/trips/1/coordinates",{
@@ -272,7 +285,7 @@ export default {
         }
     },
   },
-  mounted() {
+  async beforeMount() {
         this.getTours();
         this.getCoordinates();
   },

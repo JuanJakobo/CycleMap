@@ -9,7 +9,7 @@ import javax.persistence.*
 @JsonPropertyOrder("id", "text", "trips")
 data class Tour(
     @Column(name = "text", nullable = false)
-    val text: String,
+    val title: String,
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "tour", cascade = [CascadeType.ALL])
     @JsonIgnore

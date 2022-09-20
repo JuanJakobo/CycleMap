@@ -18,7 +18,7 @@ class TripController(val tripRepository: TripRepository, val tourRepository: Tou
     fun getTrips(): ResponseEntity<MutableList<Trip>> = ResponseEntity(tripRepository.findAll(),HttpStatus.OK)
 
     @GetMapping("/tours/{tourId}/trips")
-    fun getTrip(@PathVariable("tourId") tourId: Long): ResponseEntity<MutableList<Trip>> {
+    fun getTripsForTour(@PathVariable("tourId") tourId: Long): ResponseEntity<MutableList<Trip>> {
         return if (tourRepository.existsById(tourId)) {
             ResponseEntity(tripRepository.findByTourId(tourId), HttpStatus.OK)
         } else {

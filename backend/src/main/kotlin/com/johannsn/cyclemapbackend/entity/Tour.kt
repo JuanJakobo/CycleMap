@@ -15,6 +15,10 @@ data class Tour(
     @JsonIgnore
     val trips: MutableList<Trip> = mutableListOf(),
 
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "tour", cascade = [CascadeType.ALL])
+    @JsonIgnore
+    val coordinates: MutableList<Coordinates> = mutableListOf(),
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "tour_id")

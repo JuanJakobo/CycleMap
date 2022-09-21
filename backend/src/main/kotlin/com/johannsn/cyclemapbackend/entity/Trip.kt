@@ -1,5 +1,6 @@
 package com.johannsn.cyclemapbackend.entity
 
+import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonPropertyOrder
 import javax.persistence.*
 
@@ -7,6 +8,9 @@ import javax.persistence.*
 @Table(name = "TRIPS")
 @JsonPropertyOrder("id", "text","tour", "coordinates")
 data class Trip(
+    @Column(nullable = false)
+    val title: String,
+
     @Column(nullable = false)
     val text: String,
 

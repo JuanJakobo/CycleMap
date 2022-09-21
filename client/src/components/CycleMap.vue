@@ -20,7 +20,7 @@
                 <b-icon icon="arrow-left-square"></b-icon>
              </b-button>
             </td>
-            <section v-show="!errored">
+            <section v-show="!failedToLoad">
             <td>
               <b-form-select
                 v-model="selectedTour"
@@ -29,23 +29,22 @@
                 v-on:change="updateTourDropdown"
               />
             </td>
-             <section v-show="tourHasTrips">
-            <!-- TODO show only if route is selected, then blog entries can be opened-->
             <td>
+             <section v-show="tourHasTrips">
               <b-form-select
                 v-model="selectedTrip"
                 :options="tripDropdown"
                 v-on:change="updateTripDropdown"
               />
+              </section>
             </td>
-            </section>
             </section>
           </tr>
         </table>
       </l-control>
 
-      <!-- top right -->
-      <l-control position="topright">
+      <!-- bottom left -->
+      <l-control position="bottomleft">
         <b-button variant="light" v-on:click="openConfig()"
           ><b-icon icon="gear-wide-connected"></b-icon
         ></b-button>
@@ -63,7 +62,7 @@
 
       <!-- Polylines -->
       <!-- TODO change error process -->
-      <section v-if="errored">
+      <section v-if="FailedToLoad">
         <p>
         <!-- TODO to as overlay, as is never shown as is "overwritten" by the map -->
           We're sorry, we're not able to retrieve this information at the
@@ -71,18 +70,20 @@
         </p>
       </section>
       <section v-else>
-        <div v-if="gotCoordinates">
+        <div v-if="tourHasTrips">
         <l-polyline
-        :lat-lngs="polyline.latlngs"
-        :color="polyline.color"
-        v-on:click="loadContent()"
-        v-on:mouseover="changeColor(true)"
-        v-on:mouseleave="changeColor(false)">
-        </l-polyline>
+          v-for="item in tripsForTour"
+          :key="item.id"
+          :lat-lngs="item.coordinates"
+          :color="item.color"
+          v-on:click="loadContent(item.id)"
+          v-on:mouseover="changeColor(item.id)"
+          v-on:mouseleave="changeColor(item.id)"/>
         </div>
       </section>
 
       <!-- card -->
+      <!-- handle the close button upper right -->
       <b-modal
         id="bv-modal-trip"
         hide-footer
@@ -90,40 +91,42 @@
         title="Scrollable Content"
         size="xl"
       >
-        <template #modal-title> Ciudad de Mexico - Puebla</template>
-        <div>
-          <b-carousel
-            id="carousel-fade"
-            style="text-shadow: 0px 0px 2px #000"
-            fade
-            indicators
-            img-width="1024"
-            img-height="480"
-          >
-            <b-carousel-slide
+        <template #modal-title>
+          <div v-if="showTripDetails">
+            {{tripsForTour[currentTour].title}}
+          </div>
+        </template>
+          <div v-if="showTripDetails">
+              <div>
+              <b-carousel
+              id="carousel-fade"
+              style="text-shadow: 0px 0px 2px #000"
+              fade
+              indicators
+              img-width="1024"
+              img-height="480"
+              >
+              <b-carousel-slide
               caption="First slide"
               img-src="https://picsum.photos/1024/480/?image=10"
-            ></b-carousel-slide>
-            <b-carousel-slide
+              ></b-carousel-slide>
+              <b-carousel-slide
               caption="Second Slide"
               img-src="https://picsum.photos/1024/480/?image=12"
-            ></b-carousel-slide>
-            <b-carousel-slide
+              ></b-carousel-slide>
+              <b-carousel-slide
               caption="Third Slide"
               img-src="https://picsum.photos/1024/480/?image=22"
-            ></b-carousel-slide>  <b-carousel-slide
+              ></b-carousel-slide>  <b-carousel-slide
               caption="Third Slide"
               img-src="https://picsum.photos/1024/480/?image=22"
-            ></b-carousel-slide>
-          </b-carousel>
+              ></b-carousel-slide>
+              </b-carousel>
+              </div>
+            {{tripsForTour[currentTour].text}}
         </div>
-                <template #footer>
-
-          <small class="text-muted">Last updated 3 mins ago</small>
-        </template>
-        <b-button class="mt-3" block @click="$bvModal.hide('bv-modal-trip')" >Close Me</b-button >
+        <b-button class="mt-3" block @click="closeContent()" >Close Me</b-button >
       </b-modal>
-
     </l-map>
   </div>
 </template>
@@ -154,8 +157,8 @@ export default {
   data() {
     return {
        image: null,
-       zoom: 5,
-       center: latLng(19.432608, -99.133209),
+       zoom: 9,
+       center: latLng(52.432608, 12.133209),
        url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
        attribution:
         '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
@@ -164,15 +167,12 @@ export default {
         zoomSnap: 0.5,
         zoomControl: false,
       },
-      content: null,
-      gotCoordinates: false,
       loading: true,
-      errored: false,
+      FailedToLoad: false,
       tourHasTrips: false,
-      latl: [],
-      polyline: {
-        color: 'black',
-      },
+      showTripDetails: false,
+      currentTour: null,
+      tripsForTour:[],
       selectedTour: null,
       tourDropdown: [
         {
@@ -197,54 +197,81 @@ export default {
       this.currentCenter = center;
     },
     updateTourDropdown() {
-        console.log(this.selectedTour);
+        this.getCoordinates(this.selectedTour);
     },
     updateTripDropdown() {
+        if(this.selectedTrip != null)
+            this.loadContent(this.selectedTrip);
     },
     openConfig() {
       alert("v.0.1");
     },
-    loadContent() {
+    loadContent(itemId) {
+        console.log(itemId);
+        this.showTripDetails = true;
+        this.currentTour = itemId-1;
+        this.tripsForTour[this.currentTour].color = 'yellow';
         this.$bvModal.show("bv-modal-trip");
+        //TODO zoom into
     },
-    changeColor(change) {
-        if(change)
-            this.polyline.color = "yellow";
+    closeContent() {
+        this.showTripDetails = false;
+        this.tripsForTour[this.currentTour].color = 'black';
+        this.$bvModal.hide('bv-modal-trip');
+        this.selectedTrip = null;
+    },
+    changeColor(itemId) {
+        if(this.tripsForTour[itemId-1].color == 'black')
+        {
+            this.tripsForTour[itemId-1].color = 'yellow';
+            this.selectedTrip = itemId;
+        }
         else
-            this.polyline.color = "black";
+        {
+            this.tripsForTour[itemId-1].color = 'black';
+            this.selectedTrip = null;
+        }
     },
     async getTours() {
         let response = await fetch("http://localhost:8989/tours",{
             "method":"GET"
         }).catch(err=>{
                 console.log(err);
-                this.errored = true;
+                this.failedToLoad = true;
         });
 
         if(response.status === 200){
             let data = await response.json();
-            data.forEach((value,index) =>{
-                console.log(index);
-                this.tourDropdown.push(value.title);
+            data.forEach((v) =>{
+                this.tourDropdown.push({value : v.id, text: v.title});
             });
-
+        console.log(this.tourDropdown.length);
+        //if(this.tourDropdown.length == 2)
+            //this.getCoordinates(this.tourDropdown[1].value);
         }
         else
         {
             console.log(response.status);
         }
     },
-    async getCoordinates() {
-        let response = await fetch("http://localhost:8989/trips/1/coordinates",{
+    async getCoordinates(tourId) {
+        let response = await fetch("http://localhost:8989/tours/" + tourId + "/trips",{
                 "method":"GET"
                 })
         if (response.status === 200) {
             let data = await response.json();
+            console.log(data);
+            this.tripsForTour = [];
             data.forEach((value) =>{
-                    this.latl.push([value.lat,value.long]);
-                    });
-            this.gotCoordinates = true;
-            this.polyline.latlngs = this.latl;
+                var coordinates = [];
+                value.coordinates.forEach((v) => {
+                        coordinates.push([v.lat,v.lng]);
+                        });
+                    this.tripsForTour.push({id: value.id, title: value.title, text: value.text, coordinates: coordinates, color: 'black'});
+                    this.tripDropdown.push({value : value.id, text: value.title});
+            });
+
+            this.tourHasTrips = true;
             //TODO
             //this.ab = this.$refs.test.leaftletObject;
             //this.ab.getBounds();
@@ -258,7 +285,6 @@ export default {
   },
   async beforeMount() {
         this.getTours();
-        this.getCoordinates();
   },
   mounted() {
   },

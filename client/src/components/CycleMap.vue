@@ -62,7 +62,7 @@
 
       <!-- Polylines -->
       <!-- TODO change error process -->
-      <section v-if="FailedToLoad">
+      <section v-if="failedToLoad">
         <p>
         <!-- TODO to as overlay, as is never shown as is "overwritten" by the map -->
           We're sorry, we're not able to retrieve this information at the
@@ -168,7 +168,7 @@ export default {
         zoomControl: false,
       },
       loading: true,
-      FailedToLoad: false,
+      failedToLoad: false,
       tourHasTrips: false,
       showTripDetails: false,
       currentTour: null,

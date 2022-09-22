@@ -181,12 +181,7 @@ export default {
         },
       ],
       selectedTrip: null,
-      tripDropdown: [
-        {
-          value: null,
-          text: "Blog entry",
-        },
-      ],
+      tripDropdown: [],
     };
   },
   methods: {
@@ -209,7 +204,7 @@ export default {
     loadContent(itemId) {
         console.log(itemId);
         this.showTripDetails = true;
-        this.currentTour = itemId-1;
+        this.currentTour = itemId;
         this.tripsForTour[this.currentTour].color = 'yellow';
         this.$bvModal.show("bv-modal-trip");
         //TODO zoom into
@@ -221,14 +216,15 @@ export default {
         this.selectedTrip = null;
     },
     changeColor(itemId) {
-        if(this.tripsForTour[itemId-1].color == 'black')
+        console.log(itemId);
+        if(this.tripsForTour[itemId].color == 'black')
         {
-            this.tripsForTour[itemId-1].color = 'yellow';
+            this.tripsForTour[itemId].color = 'yellow';
             this.selectedTrip = itemId;
         }
         else
         {
-            this.tripsForTour[itemId-1].color = 'black';
+            this.tripsForTour[itemId].color = 'black';
             this.selectedTrip = null;
         }
     },
@@ -261,14 +257,19 @@ export default {
         if (response.status === 200) {
             let data = await response.json();
             console.log(data);
+            //TODO is the same/twice...
             this.tripsForTour = [];
+            var i = 0;
+            this.tripDropdown = [];
+            this.tripDropdown.push({value: null, text: "Blog entry"});
             data.forEach((value) =>{
                 var coordinates = [];
                 value.coordinates.forEach((v) => {
                         coordinates.push([v.lat,v.lng]);
                         });
-                    this.tripsForTour.push({id: value.id, title: value.title, text: value.text, coordinates: coordinates, color: 'black'});
-                    this.tripDropdown.push({value : value.id, text: value.title});
+                this.tripsForTour.push({id: i, title: value.title, text: value.text, coordinates: coordinates, color: 'black'});
+                this.tripDropdown.push({value : i, text: value.title});
+                i++;
             });
 
             this.tourHasTrips = true;

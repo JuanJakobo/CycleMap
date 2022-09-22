@@ -25,6 +25,7 @@ var trip: Trip? = null,
 
 @ManyToOne(fetch = FetchType.LAZY)
 @JoinColumn(name = "tour_id", nullable = false)
+@JsonIgnore
 var tour: Tour? = null,
 
 @Id

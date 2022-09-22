@@ -1,6 +1,5 @@
 package com.johannsn.cyclemapbackend.controller
 
-import com.johannsn.cyclemapbackend.entity.Tour
 import com.johannsn.cyclemapbackend.entity.Trip
 import com.johannsn.cyclemapbackend.exception.EntityNotFoundException
 import com.johannsn.cyclemapbackend.repository.TourRepository
@@ -17,6 +16,7 @@ class TripController(val tripRepository: TripRepository, val tourRepository: Tou
     @GetMapping("/trips")
     fun getTrips(): ResponseEntity<MutableList<Trip>> = ResponseEntity(tripRepository.findAll(),HttpStatus.OK)
 
+    //TODO returns also the coordinates, therefore not the best method for android?
     @GetMapping("/tours/{tourId}/trips")
     fun getTripsForTour(@PathVariable("tourId") tourId: Long): ResponseEntity<MutableList<Trip>> {
         return if (tourRepository.existsById(tourId)) {
@@ -30,6 +30,10 @@ class TripController(val tripRepository: TripRepository, val tourRepository: Tou
     fun postTrip(@PathVariable("tourId") tourId: Long, @RequestBody trip: Trip): ResponseEntity<Trip> {
         return tourRepository.findById(tourId).map { tour ->
             trip.tour = tour
+            for(coordinate in trip.coordinates) {
+                coordinate.trip = trip
+                coordinate.tour = trip.tour
+            }
             ResponseEntity(tripRepository.save(trip), HttpStatus.CREATED)
         }.orElseThrow {
             EntityNotFoundException("The Tour $tourId does not exist.")

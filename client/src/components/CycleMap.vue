@@ -98,42 +98,17 @@
           </div>
         </template>
           <div v-if="showTripDetails">
-              <div>
-              <b-carousel
-              id="carousel-fade"
-              style="text-shadow: 0px 0px 2px #000"
-              fade
-              indicators
-              img-width="1024"
-              img-height="480"
-              >
-              <b-carousel-slide
-              caption="First slide"
-              img-src="https://picsum.photos/1024/480/?image=10"
-              ></b-carousel-slide>
-              <b-carousel-slide
-              caption="Second Slide"
-              img-src="https://picsum.photos/1024/480/?image=12"
-              ></b-carousel-slide>
-              <b-carousel-slide
-              caption="Third Slide"
-              img-src="https://picsum.photos/1024/480/?image=22"
-              ></b-carousel-slide>  <b-carousel-slide
-              caption="Third Slide"
-              img-src="https://picsum.photos/1024/480/?image=22"
-              ></b-carousel-slide>
-              </b-carousel>
-              </div>
+          <!--TODO add images-->
             {{tripsForTour[currentTour].text}}
         </div>
-        <b-button class="mt-3" block @click="closeContent()" >Close Me</b-button >
+        <b-button class="mt-3" block @click="closeContent()">Close Me</b-button >
       </b-modal>
     </l-map>
   </div>
 </template>
 
 <script>
-import { latLng } from "leaflet";
+import { latLng, latLngBounds } from "leaflet";
 import {
   LMap,
   LTileLayer,
@@ -145,7 +120,6 @@ import {
 import { BButton } from "bootstrap-vue";
 
 export default {
-  name: "Map",
   components: {
     LMap,
     LTileLayer,
@@ -158,8 +132,9 @@ export default {
   data() {
     return {
        image: null,
-       zoom: 9,
-       center: latLng(52.432608, 12.133209),
+       zoom: 10,
+       center: latLng(0.0, 0.0),
+       endpoint: process.env.VUE_APP_BACKEND_API_URL,
        url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
        attribution:
         '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
@@ -207,55 +182,86 @@ export default {
     loadContent(itemId) {
         this.showTripDetails = true;
         this.currentTour = itemId;
-        this.tripsForTour[this.currentTour].color = 'yellow';
+        this.tripsForTour[itemId].color = 'red';
         this.$bvModal.show("bv-modal-trip");
-        //TODO zoom into
+        let tripBounds = latLngBounds();
+        for(let coordinate in this.tripsForTour[itemId].coordinates){
+            tripBounds.extend(this.tripsForTour[itemId].coordinates[coordinate]);
+        }
+        if(tripBounds.isValid())
+            this.$refs.map.mapObject.fitBounds(tripBounds);
     },
     closeContent() {
         this.showTripDetails = false;
         this.tripsForTour[this.currentTour].color = 'black';
         this.$bvModal.hide('bv-modal-trip');
         this.selectedTrip = null;
+        if(this.tourBounds.isValid())
+            this.$refs.map.mapObject.fitBounds(this.tourBounds);
+    },
+    retryConnect() {
+        this.$bvModal.hide('bv-modal-error');
+        this.getTours();
     },
     changeColor(itemId) {
-        console.log(itemId);
         if(this.tripsForTour[itemId].color == 'black')
         {
-            this.tripsForTour[itemId].color = 'yellow';
+            this.tripsForTour[itemId].color = 'red';
             this.selectedTrip = itemId;
         }
-        else
+        else if(!this.showTripDetails)
         {
             this.tripsForTour[itemId].color = 'black';
             this.selectedTrip = null;
         }
     },
     async getTours() {
-        let response = await fetch("http://localhost:8989/tours",{
-            "method":"GET"
-        }).catch(err=>{
-                console.log(err);
+        fetch(this.endpoint + "/tours",{ "method":"GET" })
+            .then((response) => {
+                if(response.status === 200){
+                       return response.json();
+                    }else{
+                        throw new Error("HTTP status " + response.status);
+                    }})
+            .then((data) =>
+            {
+                data.forEach((v) =>{
+                        this.tourDropdown.push({value : v.id, text: v.title});
+                        });
+                if(this.tourDropdown.length > 1){
+                    this.selectedTour = 1;
+                    this.getCoordinates(this.selectedTour);
+                }
+            })
+            .catch(err=>{
                 this.failedToLoad = true;
                 this.errorText = "Could not connect to the API. (" + err + ")";
                 this.$bvModal.show("bv-modal-error");
                 })
     },
     async getCoordinates(tourId) {
-        let response = await fetch("http://localhost:8989/tours/" + tourId + "/trips",{
-                "method":"GET"
-                })
-        if (response.status === 200) {
-            let data = await response.json();
-            console.log(data);
-            //TODO is the same/twice...
-            this.tripsForTour = [];
-            var i = 0;
-            this.tripDropdown = [];
-            this.tripDropdown.push({value: null, text: "Blog entry"});
-            data.forEach((value) =>{
-                var coordinates = [];
-                value.coordinates.forEach((v) => {
-                        coordinates.push([v.lat,v.lng]);
+        fetch(this.endpoint + "/tours/" + tourId + "/trips",{"method":"GET" })
+            .then((response) => {
+                if(response.status === 200){
+                       return response.json();
+                    }else{
+                        throw new Error("HTTP status " + response.status);
+                    }})
+            .then((data) => {
+                this.tripsForTour = [];
+                var i = 0;
+                this.tripDropdown = [];
+                this.tripDropdown.push({value: null, text: "Blog entry"});
+                this.tourBounds = latLngBounds();
+                data.forEach((value) =>{
+                        var coordinates = [];
+                        value.coordinates.forEach((v) => {
+                                coordinates.push([v.lat,v.lng]);
+                                this.tourBounds.extend([v.lat,v.lng]);
+                                });
+                        this.tripsForTour.push({id: i, title: value.title, text: value.text, coordinates: coordinates, color: 'black'});
+                        this.tripDropdown.push({value : i, text: value.title});
+                        i++;
                         });
 
                 if(this.tourBounds.isValid())

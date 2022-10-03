@@ -9,9 +9,6 @@ import org.springframework.web.bind.annotation.*
 import java.util.Optional
 
 @RestController
-//TODO
-@CrossOrigin("http://localhost:3001")
-//TODO here  repository not service?
 @RequestMapping("/tours")
 class TourController(val tourRepository: TourRepository){
 

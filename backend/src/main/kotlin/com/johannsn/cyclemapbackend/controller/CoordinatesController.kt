@@ -10,8 +10,6 @@ import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 
 @RestController
-//TODO
-@CrossOrigin("http://localhost:3001")
 class CoordinatesController(val coordinatesRepository : CoordinatesRepository,val tripRepository: TripRepository,val tourRepository: TourRepository) {
 
     @GetMapping("/tours/{tourId}/coordinates")

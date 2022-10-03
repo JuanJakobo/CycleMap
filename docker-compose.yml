@@ -1,0 +1,26 @@
+services:
+  cyclemap-backend-api:
+    image: cyclemap/backend
+    container_name: cyclemap-backend
+    volumes:
+      - ./data:/data
+    environment:
+      - server.port=8989
+      - spring.security.user.name=<username>
+      - spring.security.user.password=<password>
+    ports:
+      - "8989:80"
+    restart: unless-stopped
+
+  cyclemap-frontend:
+    image: cyclemap/frontend
+    restart: unless-stopped
+    ports:
+      - "3001:80"
+    depends_on:
+      - cyclemap-backend-api
+    build:
+      context: .
+      dockerfile: ./client/Dockerfile
+      args:
+        VUE_APP_BACKEND_API_URL: "http://localhost:8989"

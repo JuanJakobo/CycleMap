@@ -10,16 +10,10 @@
       @update:center="centerUpdate"
       @update:zoom="zoomUpdate"
     >
-
       <!-- top left -->
       <l-control position="topleft">
         <table>
           <tr>
-            <td>
-              <b-button variant="light" href="homepage">
-                <b-icon icon="arrow-left-square"></b-icon>
-             </b-button>
-            </td>
             <section v-show="!failedToLoad">
             <td>
               <b-form-select
@@ -51,7 +45,6 @@
       </l-control>
 
       <!-- bottom right -->
-      <!-- TODO LINK TO Private policy -->
       <l-control-zoom position="bottomright"></l-control-zoom>
       <l-control-scale
         position="bottomright"
@@ -61,15 +54,23 @@
       <l-tile-layer :url="url" :attribution="attribution" />
 
       <!-- Polylines -->
-      <!-- TODO change error process -->
-      <section v-if="failedToLoad">
         <p>
-        <!-- TODO to as overlay, as is never shown as is "overwritten" by the map -->
-          We're sorry, we're not able to retrieve this information at the
-          moment, please try back later
+        <b-modal
+        id="bv-modal-error"
+        hide-footer
+        scrollable
+        hide-header-close
+        title="Scrollable Content"
+        size="xl"
+        >
+        <template #modal-title>
+          Error
+        </template>
+        {{errorText}}
+        <b-button class="mt-3" block @click="retryConnect()">Retry</b-button >
+      </b-modal>
         </p>
-      </section>
-      <section v-else>
+      <section v-if="!failedToLoad">
         <div v-if="tourHasTrips">
         <l-polyline
           v-for="item in tripsForTour"
@@ -83,11 +84,11 @@
       </section>
 
       <!-- card -->
-      <!-- handle the close button upper right -->
       <b-modal
         id="bv-modal-trip"
         hide-footer
         scrollable
+        hide-header-close
         title="Scrollable Content"
         size="xl"
       >
@@ -171,8 +172,9 @@ export default {
       failedToLoad: false,
       tourHasTrips: false,
       showTripDetails: false,
+      errorText: null,
+      tourBounds: null,
       currentTour: null,
-      tripsForTour:[],
       selectedTour: null,
       tourDropdown: [
         {
@@ -180,6 +182,7 @@ export default {
           text: "Select tour",
         },
       ],
+      tripsForTour:[],
       selectedTrip: null,
       tripDropdown: [],
     };
@@ -202,7 +205,6 @@ export default {
       alert("v.0.1");
     },
     loadContent(itemId) {
-        console.log(itemId);
         this.showTripDetails = true;
         this.currentTour = itemId;
         this.tripsForTour[this.currentTour].color = 'yellow';
@@ -234,21 +236,9 @@ export default {
         }).catch(err=>{
                 console.log(err);
                 this.failedToLoad = true;
-        });
-
-        if(response.status === 200){
-            let data = await response.json();
-            data.forEach((v) =>{
-                this.tourDropdown.push({value : v.id, text: v.title});
-            });
-        console.log(this.tourDropdown.length);
-        //if(this.tourDropdown.length == 2)
-            //this.getCoordinates(this.tourDropdown[1].value);
-        }
-        else
-        {
-            console.log(response.status);
-        }
+                this.errorText = "Could not connect to the API. (" + err + ")";
+                this.$bvModal.show("bv-modal-error");
+                })
     },
     async getCoordinates(tourId) {
         let response = await fetch("http://localhost:8989/tours/" + tourId + "/trips",{
@@ -267,27 +257,19 @@ export default {
                 value.coordinates.forEach((v) => {
                         coordinates.push([v.lat,v.lng]);
                         });
-                this.tripsForTour.push({id: i, title: value.title, text: value.text, coordinates: coordinates, color: 'black'});
-                this.tripDropdown.push({value : i, text: value.title});
-                i++;
-            });
 
-            this.tourHasTrips = true;
-            //TODO
-            //this.ab = this.$refs.test.leaftletObject;
-            //this.ab.getBounds();
-            this.$refs.map.mapObject.fitBounds(this.polyline.getBounds());
-        }
-        else
-        {
-            console.log(response.status);
-        }
-    },
+                if(this.tourBounds.isValid())
+                    this.$refs.map.mapObject.fitBounds(this.tourBounds);
+                this.tourHasTrips = true;
+            })
+            .catch(err=>{
+                    this.errorText = "Could not connect to the API. (" + err + ")";
+                    this.$bvModal.show("bv-modal-error");
+            });
+            }
   },
   async beforeMount() {
         this.getTours();
-  },
-  mounted() {
   },
 };
 </script>

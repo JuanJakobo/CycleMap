@@ -39,8 +39,8 @@
 
       <!-- bottom left -->
       <l-control position="bottomleft">
-        <b-button variant="light" v-on:click="openConfig()"
-          ><b-icon icon="gear-wide-connected"></b-icon
+        <b-button variant="light" v-on:click="openInfo()"
+          ><b-icon icon="info"></b-icon
         ></b-button>
       </l-control>
 
@@ -176,13 +176,16 @@ export default {
         if(this.selectedTrip != null)
             this.loadContent(this.selectedTrip);
     },
-    openConfig() {
-      alert("v.0.1");
+    openInfo() {
+        this.$bvModal.show("bv-modal-info");
+    },
+    closeInfo() {
+        this.$bvModal.hide("bv-modal-info");
     },
     loadContent(itemId) {
         this.showTripDetails = true;
-        this.currentTour = itemId;
-        this.tripsForTour[itemId].color = 'red';
+        this.currentTrip = itemId;
+        this.tours[this.currentTourIndex].trips[this.currentTrip].color = 'red';
         this.$bvModal.show("bv-modal-trip");
         let tripBounds = latLngBounds();
         for(let coordinate in this.tripsForTour[itemId].coordinates){

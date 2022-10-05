@@ -11,13 +11,9 @@ data class Tour(
     @Column(name = "text", nullable = false)
     val title: String,
 
-    @OneToMany(fetch = FetchType.LAZY, mappedBy = "tour", cascade = [CascadeType.ALL])
+    @OneToMany(fetch = FetchType.EAGER, mappedBy = "tour", cascade = [CascadeType.ALL])
     @JsonIgnore
     val trips: MutableList<Trip> = mutableListOf(),
-
-    @OneToMany(fetch = FetchType.LAZY, mappedBy = "tour", cascade = [CascadeType.ALL])
-    @JsonIgnore
-    val coordinates: MutableList<Coordinates> = mutableListOf(),
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

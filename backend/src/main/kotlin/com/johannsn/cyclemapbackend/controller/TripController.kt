@@ -24,14 +24,12 @@ class TripController(val tripRepository: TripRepository, val tourRepository: Tou
         }
     }
 
-    //TODO add tests
     @PostMapping("/tours/{tourId}/trips")
     fun postTrip(@PathVariable("tourId") tourId: Long, @RequestBody trip: Trip): ResponseEntity<Trip> {
         return tourRepository.findById(tourId).map { tour ->
             trip.tour = tour
             for(coordinate in trip.coordinates) {
                 coordinate.trip = trip
-                coordinate.tour = trip.tour
             }
             ResponseEntity(tripRepository.save(trip), HttpStatus.CREATED)
         }.orElseThrow {

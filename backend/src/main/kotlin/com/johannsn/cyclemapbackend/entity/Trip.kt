@@ -1,6 +1,5 @@
 package com.johannsn.cyclemapbackend.entity
 
-import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonPropertyOrder
 import javax.persistence.*
 
@@ -20,7 +19,7 @@ data class Trip(
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "tour_id", nullable = false)
-    var tour: Tour? = null,
+    var tour: Tour,
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "trip", cascade = [CascadeType.ALL])
     val coordinates: MutableList<Coordinates> = mutableListOf(),

@@ -12,16 +12,6 @@ import org.springframework.web.bind.annotation.*
 @RestController
 class CoordinatesController(val coordinatesRepository : CoordinatesRepository,val tripRepository: TripRepository,val tourRepository: TourRepository) {
 
-    @GetMapping("/tours/{tourId}/coordinates")
-    fun getCoordinatesForTours(@PathVariable("tourId") tourId: Long): ResponseEntity<List<Coordinates>>? {
-        return if (tourRepository.existsById(tourId)) {
-            ResponseEntity(coordinatesRepository.findByTourId(tourId), HttpStatus.OK)
-        } else {
-            throw EntityNotFoundException("The Trip $tourId does not exist.")
-        }
-    }
-    //TODO only every second?
-    //get coordinates for tour and not for trip?
     @GetMapping("/trips/{tripId}/coordinates")
     fun getCoordinates(@PathVariable("tripId") tripId: Long): ResponseEntity<List<Coordinates>>? {
         return if (tripRepository.existsById(tripId)) {
@@ -36,7 +26,6 @@ class CoordinatesController(val coordinatesRepository : CoordinatesRepository,va
             try {
                 for(coordinate in coordinates) {
                     coordinate.trip = trip
-                    coordinate.tour = trip.tour
                 }
                 ResponseEntity(coordinatesRepository.saveAll(coordinates), HttpStatus.CREATED)
             }catch (e : Exception) {

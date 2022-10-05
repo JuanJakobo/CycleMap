@@ -10,23 +10,18 @@ import javax.persistence.*
 data class Coordinates (
 
 @Column(nullable = true)
-val lng: Double? = 0.0,
+val lng: Double = 0.0,
 
 @Column(nullable = true)
-val lat: Double? = 0.0,
+val lat: Double = 0.0,
 
 @Column(nullable = true)
-val altitude: Double? = 0.0,
+val altitude: Double = 0.0,
 
 @ManyToOne(fetch = FetchType.LAZY)
 @JoinColumn(name = "trip_id", nullable = false)
 @JsonIgnore
 var trip: Trip? = null,
-
-@ManyToOne(fetch = FetchType.LAZY)
-@JoinColumn(name = "tour_id", nullable = false)
-@JsonIgnore
-var tour: Tour? = null,
 
 @Id
 @GeneratedValue(strategy = GenerationType.IDENTITY)

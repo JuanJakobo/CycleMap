@@ -289,12 +289,13 @@ export default {
                     }})
         .then((data) =>
                 {
+                this.tours = [];
                 data.forEach((v) =>{
                         this.tours.push({value : v.id, text: v.title, trips: []});
                         });
                 if(this.tours.length > 0){
                 this.selectedTour = this.tours[this.tours.length-1].value;
-                this.getCoordinates(this.tours.length);
+                this.getCoordinates(this.selectedTour);
                 }else{
                 this.errorText = "There are no Tours saved on the server.";
                 this.$bvModal.show("bv-modal-error");

@@ -122,7 +122,7 @@
 	v-for="item in filterTours(tours[currentTourIndex].trips)"
             :key="item.title"
             :lat-lng="item.loc"
-            v-on:click="item.loadContent(id)"
+            v-on:click="loadContent(id)"
           >
           <l-tooltip>
             {{item.title}} <br>

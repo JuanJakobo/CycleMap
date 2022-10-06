@@ -110,7 +110,7 @@
       <!-- Polylines -->
       <section v-if="tourHasTrips">
         <l-polyline
-          v-for="item in tours[currentTourIndex].trips"
+          v-for="item in filterTours(tours[currentTourIndex].trips)"
           :key="item.id"
           :lat-lngs="item.coordinates"
           :color="item.color"
@@ -119,10 +119,10 @@
           v-on:mouseover="changeColor(item.id)"
           v-on:mouseleave="changeColor(item.id)"/>
           <l-marker
-            v-for="item in tours[currentTourIndex].trips"
+	v-for="item in filterTours(tours[currentTourIndex].trips)"
             :key="item.title"
             :lat-lng="item.loc"
-            v-on:click="loadContent(item.id)"
+            v-on:click="item.loadContent(id)"
           >
           <l-tooltip>
             {{item.title}} <br>
@@ -142,12 +142,12 @@
       >
         <template #modal-title>
           <div v-if="showTripDetails">
-            {{tours[currentTourIndex].trips[currentTrip].title}}
+            {{tours[currentTourIndex].trips[currentTripIndex].title}}
           </div>
         </template>
           <div v-if="showTripDetails">
           <!--TODO add images-->
-            {{tours[currentTourIndex].trips[currentTrip].text}}
+            {{tours[currentTourIndex].trips[currentTripIndex].text}}
         </div>
         <b-button class="mt-3" block @click="closeContent()">Close Me</b-button >
       </b-modal>
@@ -203,15 +203,19 @@ export default {
       showTripDetails: false,
       errorText: null,
       tourBounds: null,
-      currentTrip: null,
+      currentTripIndex: null,
       currentTourIndex: null,
       selectedTour: null,
       tours: [],
       selectedTrip: null,
-      tripDropdown: [],
     }
   },
   methods: {
+    filterTours(trips){
+	return trips.filter(function(trip) {
+		return trip.id != null;
+		})
+    },
     zoomUpdate(zoom) {
       this.currentZoom = zoom;
     },
@@ -233,19 +237,19 @@ export default {
     },
     loadContent(itemId) {
         this.showTripDetails = true;
-        this.currentTrip = itemId;
-        this.tours[this.currentTourIndex].trips[this.currentTrip].color = 'red';
+        this.currentTripIndex = this.tours[this.currentTourIndex].trips.map(function(trip) { return trip.id; }).indexOf(itemId);
+        this.tours[this.currentTourIndex].trips[this.currentTripIndex].color = 'red';
         this.$bvModal.show("bv-modal-trip");
         let tripBounds = latLngBounds();
-        for(let coordinate in this.tours[this.currentTourIndex].trips[itemId].coordinates){
-            tripBounds.extend(this.tours[this.currentTourIndex].trips[itemId].coordinates[coordinate]);
+        for(let coordinate in this.tours[this.currentTourIndex].trips[this.currentTripIndex].coordinates){
+            tripBounds.extend(this.tours[this.currentTourIndex].trips[this.currentTripIndex].coordinates[coordinate]);
         }
         if(tripBounds.isValid())
             this.$refs.map.mapObject.fitBounds(tripBounds);
     },
     closeContent() {
         this.showTripDetails = false;
-        this.tours[this.currentTourIndex].trips[this.currentTrip].color = "black";
+        this.tours[this.currentTourIndex].trips[this.currentTripIndex].color = "black";
         this.$bvModal.hide('bv-modal-trip');
         this.selectedTrip = null;
         if(this.tourBounds.isValid())
@@ -267,14 +271,15 @@ export default {
         this.getTours();
     },
     changeColor(itemId) {
-        if(this.tours[this.currentTourIndex].trips[itemId].color === "black")
+        let index = this.tours[this.currentTourIndex].trips.map(function(trip) { return trip.id; }).indexOf(itemId);
+        if(this.tours[this.currentTourIndex].trips[index].color === "black")
         {
-            this.tours[this.currentTourIndex].trips[itemId].color = "red";
+            this.tours[this.currentTourIndex].trips[index].color = "red";
             this.selectedTrip = itemId;
         }
         else if(!this.showTripDetails)
         {
-            this.tours[this.currentTourIndex].trips[itemId].color = "black";
+            this.tours[this.currentTourIndex].trips[index].color = "black";
             this.selectedTrip = null;
         }
     },
@@ -309,7 +314,7 @@ export default {
     },
 
     async getCoordinates(tourId) {
-        let index = this.tours.map(function(e) { return e.value; }).indexOf(tourId);
+        let index = this.tours.map(function(tour) { return tour.value; }).indexOf(tourId);
         this.tourBounds = latLngBounds();
         if(this.tours[index].trips.length > 0){
             for(let trip in this.tours[index].trips){
@@ -330,9 +335,9 @@ export default {
                         })
             .then((data) => {
                     let i = 0;
-                    //this.tours[index].trips.push({id: null, title: "Select a stage"});
+                    this.tours[index].trips.push({id: null, title: "Select a stage"});
                     data.forEach((value) =>{
-                            var coordinates = [];
+                            let coordinates = [];
                             value.coordinates.forEach((v) => {
                                     coordinates.push([v.lat,v.lng]);
                                     this.tourBounds.extend([v.lat,v.lng]);

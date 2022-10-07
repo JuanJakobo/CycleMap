@@ -147,6 +147,9 @@
         </template>
           <div v-if="showTripDetails">
           <!--TODO add images-->
+            Distance: {{tours[currentTourIndex].trips[currentTripIndex].distance}} km<br>
+            Ascent: {{tours[currentTourIndex].trips[currentTripIndex].ascent}} m<br>
+            Descent: {{tours[currentTourIndex].trips[currentTripIndex].descent}} m<br>
             {{tours[currentTourIndex].trips[currentTripIndex].text}}
         </div>
         <b-button class="mt-3" block @click="closeContent()">Close Me</b-button >
@@ -213,7 +216,7 @@ export default {
   methods: {
     filterTours(trips){
 	return trips.filter(function(trip) {
-		return trip.id != null;
+		return trip.coordinates.length;
 		})
     },
     zoomUpdate(zoom) {
@@ -335,7 +338,7 @@ export default {
                         })
             .then((data) => {
                     let i = 0;
-                    this.tours[index].trips.push({id: null, title: "Select a stage"});
+                    this.tours[index].trips.push({id: null, title: "Select a stage", coordinates:[]});
                     data.forEach((value) =>{
                             let coordinates = [];
                             value.coordinates.forEach((v) => {
@@ -344,7 +347,8 @@ export default {
                                     });
                             //TODO id should be value.id
 
-                            this.tours[index].trips.push({id: i, title: value.title, text: value.text, coordinates: coordinates, color: "black", loc: coordinates[parseInt(coordinates.length/2)]});
+                            this.tours[index].trips.push({id: i, title: value.title, text: value.text, distance:
+                            value.distance /1000, ascent: value.ascent, descent: value.descent, coordinates: coordinates, color: "black", loc: coordinates[parseInt(coordinates.length/2)]});
                             i++;
                             });
                     this.drawBounds(index, tourId);

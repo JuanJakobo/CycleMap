@@ -148,7 +148,7 @@
           <div v-if="showTripDetails">
           <!--TODO add images-->
             Distance: {{tours[currentTourIndex].trips[currentTripIndex].distance}} km<br>
-            Ascent: {{tours[currentTourIndex].trips[currentTripIndex].ascent}} m<br>
+            Total elevation: {{tours[currentTourIndex].trips[currentTripIndex].ascent}} m<br>
             Descent: {{tours[currentTourIndex].trips[currentTripIndex].descent}} m<br>
             {{tours[currentTourIndex].trips[currentTripIndex].text}}
         </div>

@@ -5,7 +5,7 @@ import javax.persistence.*
 
 @Entity
 @Table(name = "TRIPS")
-@JsonPropertyOrder("id", "text","tour", "coordinates")
+@JsonPropertyOrder("id", "text", "distance", "ascent", "descent", "tour", "coordinates")
 data class Trip(
     @Column(nullable = false)
     val title: String,
@@ -13,19 +13,29 @@ data class Trip(
     @Column(nullable = false)
     val text: String,
 
-    //TODO
+    //TODO add images
     //@Column(nullable = true)
     //val imageUrls: List<String>? = null,
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne()
     @JoinColumn(name = "tour_id", nullable = false)
-    var tour: Tour,
+    var tour: Tour? = null,
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "trip", cascade = [CascadeType.ALL])
+    @Column(nullable = false)
     val coordinates: MutableList<Coordinates> = mutableListOf(),
+
+    @Column
+    val distance: Int = 0,
+
+    @Column
+    val ascent: Int = 0,
+
+    @Column
+    val descent: Int = 0,
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "trip_id")
-    val id: Long = 0,
+    var id: Long = 0,
 )

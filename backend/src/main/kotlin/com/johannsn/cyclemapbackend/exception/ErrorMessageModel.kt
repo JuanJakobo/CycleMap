@@ -7,7 +7,6 @@ class ErrorMessageModel {
     var status : HttpStatus
     var message : String? = null
     var timeStamp: LocalDateTime? = null
-    //TODO do not return if is null
     var debugMessage: String? = null
 
     init {

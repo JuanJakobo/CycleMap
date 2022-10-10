@@ -16,7 +16,7 @@ class TourController(val tourRepository: TourRepository){
     fun getTours(): ResponseEntity<MutableList<Tour>> = ResponseEntity(tourRepository.findAll(),HttpStatus.OK)
 
     @PostMapping("")
-    fun postTour(@RequestBody tour: Tour): ResponseEntity<Tour> =ResponseEntity(tourRepository.save(tour), HttpStatus.CREATED)
+    fun postTour(@RequestBody tour: Tour): ResponseEntity<Tour> = ResponseEntity(tourRepository.save(tour), HttpStatus.CREATED)
 
     @GetMapping("/{tourId}")
     fun getTour(@PathVariable("tourId") tourId: Long): ResponseEntity<Optional<Tour>> {

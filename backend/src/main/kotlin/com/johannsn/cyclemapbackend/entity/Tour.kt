@@ -11,12 +11,12 @@ data class Tour(
     @Column(name = "text", nullable = false)
     val title: String,
 
-    @OneToMany(fetch = FetchType.EAGER, mappedBy = "tour", cascade = [CascadeType.ALL])
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "tour", cascade = [CascadeType.ALL])
     @JsonIgnore
     val trips: MutableList<Trip> = mutableListOf(),
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "tour_id")
-    val id: Long = 0,
+    var id: Long = 0,
 )

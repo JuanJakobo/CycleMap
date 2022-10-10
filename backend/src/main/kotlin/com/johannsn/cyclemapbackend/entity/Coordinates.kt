@@ -18,7 +18,7 @@ val lat: Double = 0.0,
 @Column(nullable = true)
 val altitude: Double = 0.0,
 
-@ManyToOne(fetch = FetchType.LAZY)
+@ManyToOne()
 @JoinColumn(name = "trip_id", nullable = false)
 @JsonIgnore
 var trip: Trip? = null,

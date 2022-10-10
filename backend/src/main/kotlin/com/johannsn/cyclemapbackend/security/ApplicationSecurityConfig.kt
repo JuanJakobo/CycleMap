@@ -15,7 +15,6 @@ class ApplicationSecurityConfig : WebSecurityConfigurerAdapter() {
         http.headers().frameOptions().disable()
         http.authorizeRequests()
             .antMatchers(HttpMethod.GET, "/**").permitAll()
-            .antMatchers("/h2/**").permitAll()
             .anyRequest()
             .authenticated()
             .and()

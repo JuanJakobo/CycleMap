@@ -1,5 +1,6 @@
 package com.johannsn.cyclemapbackend.controller
 
+import com.johannsn.cyclemapbackend.entity.Tour
 import com.johannsn.cyclemapbackend.entity.Trip
 import com.johannsn.cyclemapbackend.exception.EntityNotFoundException
 import com.johannsn.cyclemapbackend.repository.TourRepository
@@ -7,6 +8,7 @@ import com.johannsn.cyclemapbackend.repository.TripRepository
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
+import java.util.*
 
 @RestController
 class TripController(val tripRepository: TripRepository, val tourRepository: TourRepository) {
@@ -14,7 +16,6 @@ class TripController(val tripRepository: TripRepository, val tourRepository: Tou
     @GetMapping("/trips")
     fun getTrips(): ResponseEntity<MutableList<Trip>> = ResponseEntity(tripRepository.findAll(),HttpStatus.OK)
 
-    //TODO returns also the coordinates, therefore not the best method for android?
     @GetMapping("/tours/{tourId}/trips")
     fun getTripsForTour(@PathVariable("tourId") tourId: Long): ResponseEntity<MutableList<Trip>> {
         return if (tourRepository.existsById(tourId)) {
@@ -37,13 +38,17 @@ class TripController(val tripRepository: TripRepository, val tourRepository: Tou
         }
     }
 
-    @DeleteMapping("/trips/{tripId}")
-    fun deleteTrip(@PathVariable("tripId") tripId: Long): ResponseEntity<Trip> {
-        return if (tripRepository.existsById(tripId)) {
-            tripRepository.deleteById(tripId)
-            ResponseEntity(HttpStatus.NO_CONTENT)
+    @DeleteMapping("/tours/{tourId}/trips/{tripId}")
+    fun deleteTrip(@PathVariable("tourId") tourId: Long, @PathVariable("tripId") tripId: Long): ResponseEntity<Trip> {
+        return if (tourRepository.existsById(tourId)) {
+            if(tourRepository.existsById(tripId)) {
+                tripRepository.deleteById(tripId)
+                ResponseEntity(HttpStatus.NO_CONTENT)
+            }else{
+                throw EntityNotFoundException("The Trip $tripId does not exist.")
+            }
         } else {
-            throw EntityNotFoundException("The Trip $tripId does not exist.")
+            throw EntityNotFoundException("The Tour $tourId does not exist.")
         }
     }
 }
